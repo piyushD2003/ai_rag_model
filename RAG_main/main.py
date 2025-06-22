@@ -216,6 +216,7 @@ print("ChromaDB client initialized for in-memory storage.")
 
 class ResumeUploadRequest(BaseModel):
     resume_text: str
+    api_key: str
 
 class SessionResponse(BaseModel):
     session_id: str
@@ -236,6 +237,11 @@ def start_session_and_process_resume(request: ResumeUploadRequest):
     Starts a new session, chunks the resume, gets embeddings via API,
     and stores them in a temporary in-memory vector store.
     """
+    try:
+        genai.configure(api_key=request.api_key)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid API Key provided. Error: {e}")
+
     session_id = str(uuid.uuid4())
     collection = chroma_client.create_collection(name=session_id)
     
